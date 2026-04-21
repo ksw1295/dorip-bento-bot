@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "도립대 밥봇 Pro",
-  "version": "2.0",
-  "permissions": ["storage", "alarms"],
+  "name": "도립대 밥봇 Pro v3.0",
+  "version": "3.0",
+  "permissions": ["storage", "alarms", "tabs"],
   "host_permissions": ["https://form.naver.com/*"],
   "background": {
     "service_worker": "background.js"

@@ -1,12 +1,8 @@
-chrome.storage.local.get(['myDept', 'myName', 'myPhone', 'eatingDays', 'userType'], (userData) => {
-  // 🛑 안전 장치: 이름이나 학과 정보가 없으면 봇 즉시 종료
-  if (!userData.myName || userData.myName === "" || !userData.myDept) {
-    console.log("🚨 밥봇 중단: 사용자 정보가 설정되지 않았습니다.");
-    return;
-  }
+chrome.storage.local.get(['myDept', 'myName', 'myPhone', 'eatingDays', 'userType', 'specificDates'], (userData) => {
+  if (!userData.myName || userData.myName === "") return;
 
   const botInterval = setInterval(() => {
-    // Phase 1: 성공 감지 (식사 날짜 기준으로 달력에 기록)
+    // 1. 성공 감지 및 데이터 업데이트
     if (document.body.innerText.includes("답변이 제출되었습니다") || document.body.innerText.includes("신청을 완료하였습니다")) {
         const titleMatch = document.body.innerText.match(/(\d+)월\s*(\d+)일/);
         const now = new Date();
@@ -16,37 +12,48 @@ chrome.storage.local.get(['myDept', 'myName', 'myPhone', 'eatingDays', 'userType
             mealDateKey = `${now.getFullYear()}-${parseInt(titleMatch[1])}-${parseInt(titleMatch[2])}`;
         }
 
-        chrome.storage.local.get(['bookedDates'], (res) => {
-          let dates = res.bookedDates || [];
-          if (!dates.includes(mealDateKey)) {
-            dates.push(mealDateKey);
-            chrome.storage.local.set({ 
-              bookedDates: dates, 
-              lastSuccessDate: new Date().toLocaleDateString() 
-            }, () => {
-                setTimeout(() => window.close(), 2500);
-            });
-          } else { window.close(); }
+        chrome.storage.local.get(['bookedDates', 'specificDates'], (res) => {
+          let booked = res.bookedDates || [];
+          let specific = res.specificDates || [];
+          
+          if (!booked.includes(mealDateKey)) booked.push(mealDateKey);
+          // 특정 날짜로 예약 성공했다면 해당 리스트에서 삭제
+          specific = specific.filter(d => d !== mealDateKey);
+
+          chrome.storage.local.set({ 
+            bookedDates: booked, 
+            specificDates: specific,
+            lastSuccessDate: new Date().toLocaleDateString() 
+          }, () => {
+            setTimeout(() => window.close(), 2500);
+          });
         });
         clearInterval(botInterval);
         return;
     }
 
-    // Phase 2: 입력 폼 로직 (식사 요일 판별 포함)
+    // 2. 입력 폼 로직
     const inputs = document.querySelectorAll('input[type="text"], input[type="tel"]');
     if (inputs.length >= 3) {
       const titleMatch = document.body.innerText.match(/(\d+)월\s*(\d+)일/);
       if (titleMatch) {
-        const targetDay = new Date(new Date().getFullYear(), parseInt(titleMatch[1])-1, parseInt(titleMatch[2])).getDay();
-        // 내가 선택한 요일이 아니면 창 닫기
-        if (!userData.eatingDays.includes(targetDay)) {
+        const year = new Date().getFullYear();
+        const month = parseInt(titleMatch[1]);
+        const day = parseInt(titleMatch[2]);
+        const dateKey = `${year}-${month}-${day}`;
+        const dayOfWeek = new Date(year, month - 1, day).getDay();
+
+        const isRoutine = (userData.eatingDays || []).includes(dayOfWeek);
+        const isSpecific = (userData.specificDates || []).includes(dateKey);
+
+        if (!isRoutine && !isSpecific) {
+          console.log("대상 날짜 아님. 종료.");
           clearInterval(botInterval);
           window.close();
           return;
         }
       }
 
-      // 실제 정보 주입
       const forceInput = (el, v) => {
         el.value = v;
         el.dispatchEvent(new Event('input', {bubbles:true}));
