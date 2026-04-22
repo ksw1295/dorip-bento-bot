@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    body { width: 320px; padding: 15px; font-family: sans-serif; background: #f8f9fa; color: #333; }
+    body { width: 320px; padding: 15px; font-family: sans-serif; background: #f8f9fa; color: #333; margin: 0; }
     .box { background: white; padding: 12px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 12px; border: 1px solid #eee; }
     h3 { margin: 0 0 10px 0; font-size: 14px; border-left: 4px solid #03c75a; padding-left: 8px; }
-    input, select { width: calc(100% - 18px); padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px; }
-    .day-grid { display: flex; justify-content: space-between; margin: 10px 0; font-size: 11px; }
-    button { width: 100%; padding: 10px; background: #03c75a; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    input, select { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 5px; font-size: 13px; box-sizing: border-box; }
+    .day-grid { display: flex; justify-content: space-between; margin: 10px 0; font-size: 12px; }
     
     /* 달력 스타일 */
     .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 11px; margin-top: 10px; }
@@ -21,16 +20,27 @@
     .today { border: 2px solid #3498db !important; }
     .day-header { font-weight: bold; color: #999; padding-bottom: 5px; }
     .legend { font-size: 10px; color: #666; margin-top: 8px; display: flex; justify-content: space-around; }
+    
+    /* 하단 버튼 영역 */
+    .btn-group { display: flex; gap: 8px; margin-top: 5px; padding-bottom: 5px; }
+    button { flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
+    #save-btn { background: #03c75a; }
+    #run-btn { background: #3498db; }
   </style>
 </head>
 <body>
+  
   <div class="box">
-    <h3>⚙️ 예약 정보 설정</h3>
+    <h3>👤 예약자 정보</h3>
     <select id="userType"><option value="재학생">재학생</option><option value="교직원">교직원</option></select>
     <input type="text" id="myDept" placeholder="학과/부서명">
     <input type="text" id="myName" placeholder="이름">
     <input type="text" id="myPhone" placeholder="연락처">
-    <p style="font-size: 11px; margin: 10px 0 5px 0;">🍱 매주 먹는 요일 (루틴):</p>
+  </div>
+
+  <div class="box">
+    <h3>🍱 식사 요일 및 날짜 설정</h3>
+    <p style="font-size: 11px; margin: 0 0 5px 0; color: #666;">① 매주 먹는 요일 (루틴)</p>
     <div class="day-grid">
       <label><input type="checkbox" class="day-check" value="1">월</label>
       <label><input type="checkbox" class="day-check" value="2">화</label>
@@ -38,18 +48,22 @@
       <label><input type="checkbox" class="day-check" value="4">목</label>
       <label><input type="checkbox" class="day-check" value="5">금</label>
     </div>
-    <button id="save-btn">설정 저장하기</button>
-  </div>
-
-  <div class="box">
-    <h3 id="cal-month">📅 식사 달력 (날짜 클릭 시 특정일 추가)</h3>
+    
+    <p style="font-size: 11px; margin: 15px 0 5px 0; color: #666;">② 특정 날짜 추가/제외 (달력 클릭)</p>
+    <h3 id="cal-month" style="border: none; padding: 0; margin-bottom: 5px; text-align: center;">📅 식사 달력</h3>
     <div class="calendar" id="calendar-grid"></div>
     <div class="legend">
-      <span>🟦 특정일 선택</span>
+      <span>🟦 특정일 추가</span>
       <span>--- 루틴 요일</span>
-      <span>✅ 예약 완료</span>
+      <span>✅ 예약됨</span>
     </div>
   </div>
+
+  <div class="btn-group">
+    <button id="save-btn">💾 설정 저장</button>
+    <button id="run-btn">🚀 즉시 실행</button>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>

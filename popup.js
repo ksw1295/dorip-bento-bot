@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
-    document.getElementById('cal-month').innerText = `${month + 1}월 식사 일정`;
+    document.getElementById('cal-month').innerText = `${month + 1}월 달력`;
     
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dayEl.className = `day ${isBooked ? 'booked' : ''} ${isManual ? 'manual' : ''} ${isRoutine ? 'routine' : ''} ${isToday ? 'today' : ''}`;
       dayEl.innerText = d;
 
-      // 날짜 클릭 시 특정 날짜 토글
+      // 달력 클릭 시: 파란색 토글 (즉시 자동 저장)
       dayEl.onclick = () => {
         chrome.storage.local.get(['specificDates'], (data) => {
           let sDates = data.specificDates || [];
@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // 전체 저장 버튼
   document.getElementById('save-btn').addEventListener('click', () => {
     const days = Array.from(document.querySelectorAll('.day-check:checked')).map(el => parseInt(el.value));
     chrome.storage.local.set({
@@ -66,7 +67,21 @@ document.addEventListener('DOMContentLoaded', () => {
       myName: document.getElementById('myName').value,
       myPhone: document.getElementById('myPhone').value,
       eatingDays: days
-    }, () => alert("설정이 저장되었습니다!"));
+    }, () => {
+      alert("✅ 모든 설정이 저장되었습니다!");
+      updateUI(); // 저장 후 루틴 요일 달력 테두리 갱신
+    });
+  });
+
+  // 즉시 실행 버튼
+  document.getElementById('run-btn').addEventListener('click', () => {
+    chrome.storage.local.get(['myName', 'myDept'], (res) => {
+      if (!res.myName || res.myName.trim() === "" || !res.myDept) {
+        alert("🚨 먼저 이름과 학과를 입력하고 [설정 저장]을 눌러주세요!");
+        return;
+      }
+      chrome.tabs.create({ url: "https://form.naver.com/response/yzqQI34B9APhSZ_MgSa_KQ" });
+    });
   });
 
   updateUI();
